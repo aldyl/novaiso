@@ -2,7 +2,7 @@
 
 while read param ; do
 eval ${param}
-done < configure.sh
+done < .novaisorc
 
 if [ "$arch" = "x86_64" ]; then
 arch=amd64
