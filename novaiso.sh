@@ -47,7 +47,7 @@ show_default(){
     echo "Mirror Repository"
     echo ""$MIRRORREPOSITORY""
     echo "Components   = "$COMPONENTS""
-    echo "Debootstrap Chroot = ${squashfs_root_directory}"
+    echo "Debootstrap Chroot = ${SQUASHFS_ROOT_DIRECTORY}"
     echo "The default directory for the chroot is the current folder"
 }
 
@@ -65,42 +65,43 @@ change_default(){
 }
 
 configure_debootstrap() {
-#Se instalan los paquetes esenciales para realizar la personalizacion
+
 	clear
     echo "[1;12m################################################################################[0;39m"
-	echo "[1;12m###########           Crear sistema limpio con Debootstrap           ###########[0;39m"
+	echo "[1;12m###########                  Begining Debootstrap                    ###########[0;39m"
 	echo "[1;12m################################################################################[0;39m"
     
      
     #instalando debootstrap
     sudo apt-get update
     sudo apt-get --yes install debootstrap
+    
     #Carpeta para el debootstrap
-    sudo rm -R ${squashfs_root_directory}
-    mkdir -p ${squashfs_root_directory}
+    sudo rm -R ${SQUASHFS_ROOT_DIRECTORY}
+    mkdir -p ${SQUASHFS_ROOT_DIRECTORY}
     #Instalando el debootstrap
-    sudo debootstrap --arch=$arch --components=$COMPONENTS $CODENAME ${squashfs_root_directory} $MIRRORREPOSITORY
+    sudo debootstrap --arch=$ARCH_LIVECD --components=$COMPONENTS $CODENAME ${SQUASHFS_ROOT_DIRECTORY} $MIRRORREPOSITORY
     #Sistema listo,
 
 	}
 
 mount_fs_chroot(){
 	
-	sudo chroot ${squashfs_root_directory} mount -t proc proc /proc
-    sudo chroot ${squashfs_root_directory} mount -t sysfs sysfs /sys
+	sudo chroot ${SQUASHFS_ROOT_DIRECTORY} mount -t proc proc /proc
+    sudo chroot ${SQUASHFS_ROOT_DIRECTORY} mount -t sysfs sysfs /sys
 	
-	sudo mount --bind /dev ${squashfs_root_directory}/dev 
-    sudo mount --bind /run ${squashfs_root_directory}/run
+	sudo mount --bind /dev ${SQUASHFS_ROOT_DIRECTORY}/dev 
+    sudo mount --bind /run ${SQUASHFS_ROOT_DIRECTORY}/run
 	
 
 }
 
 umount_fs_chroot(){
 	
-	sudo umount -f ${squashfs_root_directory}/proc
-    sudo umount -f ${squashfs_root_directory}/sys
-    sudo umount -f ${squashfs_root_directory}/dev
-    sudo umount -f ${squashfs_root_directory}/run
+	sudo umount -f ${SQUASHFS_ROOT_DIRECTORY}/proc
+    sudo umount -f ${SQUASHFS_ROOT_DIRECTORY}/sys
+    sudo umount -f ${SQUASHFS_ROOT_DIRECTORY}/dev
+    sudo umount -f ${SQUASHFS_ROOT_DIRECTORY}/run
 
 	}
 	
@@ -119,10 +120,10 @@ mv /usr/sbin/invoke-rc.d-backup /usr/sbin/invoke-rc.d"
 
 	clean_chroot(){
 
-	echo "Actualizar todos los paquetes de la distribucion"
+	echo "Update all packages"
 	apt-get --yes upgrade
 
-	echo "Limpieza del Chroot"
+	echo "Clean Chroot"
 
     $nova_2015
     
@@ -139,23 +140,23 @@ mv /usr/sbin/invoke-rc.d-backup /usr/sbin/invoke-rc.d"
 	exit
 }
 
-echo "Saliendo del Chroot"
+echo "Go out chroot"
 
 clean_chroot
 
 		
 EOF
 		
-	sudo cp /tmp/util_clean_chroot.sh ${squashfs_root_directory}/opt/
-    sudo chroot ${squashfs_root_directory} sh /opt/util_clean_chroot.sh
-    echo "Limpieza terminada"
-    sudo rm ${squashfs_root_directory}/opt/util_clean_chroot.sh
+	sudo cp /tmp/util_clean_chroot.sh ${SQUASHFS_ROOT_DIRECTORY}/opt/
+    sudo chroot ${SQUASHFS_ROOT_DIRECTORY} sh /opt/util_clean_chroot.sh
+    echo "Finished Clean"
+    sudo rm ${SQUASHFS_ROOT_DIRECTORY}/opt/util_clean_chroot.sh
 
 }
 
 install_app_chroot(){
 	
-	echo "Generando ordenes de personalizacion"
+	echo "Generate customize script"
 	
 	if [ "$VERSION" = "2015" ]; then
 	 
@@ -169,27 +170,23 @@ ln -s /bin/true /usr/sbin/invoke-rc.d"
 	cat <<EOF > /tmp/util_chroot_app.sh
 	#!/bin/bash
 
-	#Programs
-	NOVAINSTALLER=$NOVAINSTALLER
-	RESCUE=$RESCUE
-	
 	list_app(){
 
 	apt-get install --yes  $NOVAINSTALLER $RESCUE	
 
 	echo "[1;31m********************************************************************************[0;39m"
-	echo "Terminada la lista de paquetes..."
+	echo "Finish package list..."
 	
 	}
 
       
 	custom_app(){
 
-	echo "Corrigiendo errores..."
+	echo "Fixing packages..."
 	apt-get install -f
 
 	echo "[1;31m********************************************************************************[0;39m"
-	echo "Actualizando los Paquetes"
+	echo "Update packages"
 	apt-get update
 
 	$nova_2015
@@ -206,7 +203,7 @@ ln -s /bin/true /usr/sbin/invoke-rc.d"
 	dbus-uuidgen > /var/lib/dbus/machine-id
 
 	echo "[1;31m********************************************************************************[0;39m"
-	echo "Instalando Nova Base"
+	echo "Nova Base .."
 	apt-get install --yes nova-base
 
 	echo "[1;31m********************************************************************************[0;39m"
@@ -214,7 +211,8 @@ ln -s /bin/true /usr/sbin/invoke-rc.d"
 	apt-get install --yes casper
 	apt-get install --yes linux-generic
 	echo "[1;31m********************************************************************************[0;39m"
-	echo "Corrigiendo errores..."
+	
+	echo "Fixing packages..."
 	apt-get install -f
 
 	list_app
@@ -224,44 +222,48 @@ ln -s /bin/true /usr/sbin/invoke-rc.d"
 		
 EOF
 		
-	sudo cp /tmp/util_chroot_app.sh ${squashfs_root_directory}/opt/
-	sudo chroot ${squashfs_root_directory} sh /opt/util_chroot_app.sh
-	echo "Eliminando comando de personalizacion"
-	sudo rm ${squashfs_root_directory}/opt/util_chroot_app.sh
+	sudo cp /tmp/util_chroot_app.sh ${SQUASHFS_ROOT_DIRECTORY}/opt/
+	sudo chroot ${SQUASHFS_ROOT_DIRECTORY} sh /opt/util_chroot_app.sh
+	echo "Delete customize script"
+	sudo rm ${SQUASHFS_ROOT_DIRECTORY}/opt/util_chroot_app.sh
 	
 	}
 	
 install_app(){
 
 	echo "Set Network Configuration"
-	sudo cp /etc/hosts ${squashfs_root_directory}/etc/hosts
+	sudo cp /etc/hosts ${SQUASHFS_ROOT_DIRECTORY}/etc/hosts
 	
-	sudo cp /etc/resolv.conf ${squashfs_root_directory}/etc/resolv.conf
+	sudo cp /etc/resolv.conf ${SQUASHFS_ROOT_DIRECTORY}/etc/resolv.conf
+	
+	componentsMirror=$(echo $COMPONENTS | sed s/,/" "/g) 
 	  
     sudo echo "deb $MIRRORREPOSITORY $CODENAME $componentsMirror" > /tmp/sources.list
-    sudo cp /tmp/sources.list ${squashfs_root_directory}/etc/apt/sources.list
+    sudo cp /tmp/sources.list ${SQUASHFS_ROOT_DIRECTORY}/etc/apt/sources.list
 	
-	echo "Comenzar a Modificar"
+	echo "Start app installation"
 	mount_fs_chroot
 
-	#Aqui se ejecuta dentro del chroot
+	#I chroot
 	install_app_chroot
     clean_chroot
 
 	#Se ha terminado el chroot
 	umount_fs_chroot
+	
+	echo "Finish app installation"
 
 	}
 
 modify_squashfs(){
 	
-	sudo unsquashfs ${ARCH_LIVE}/casper/filesystem.squashfs -d ${squashfs_root_directory}
+	sudo unsquashfs ${ARCH_LIVE}/casper/filesystem.squashfs -d ${SQUASHFS_ROOT_DIRECTORY}
 
 	sudo mv $ARCH_LIVE/casper/filesystem.squashfs $ARCH_LIVE/casper/filesystem.squashfs.save
 
 	mount_fs_chroot
 
-	sudo chroot ${squashfs_root_directory}/ /bin/bash
+	sudo chroot ${SQUASHFS_ROOT_DIRECTORY}/ /bin/bash
 
 	umount_fs_chroot
 	
@@ -281,7 +283,7 @@ compress_squashfs(){
     mkdir -p  $ARCH_LIVE/casper
 	
 	sudo mksquashfs \
-	${squashfs_root_directory} $ARCH_LIVE/casper/filesystem.squashfs     \
+	${SQUASHFS_ROOT_DIRECTORY} $ARCH_LIVE/casper/filesystem.squashfs     \
 	-b 1048576 -comp xz -Xdict-size 100%
 
 	sudo rm $ARCH_LIVE/casper/filesystem.squashfs.save
@@ -295,7 +297,7 @@ new_squashfs_for_isoimage(){
 	#Create the folder casper if not exist
     mkdir -p  $ARCH_LIVE/casper
     
-	sudo chroot ${squashfs_root_directory} dpkg-query -W \
+	sudo chroot ${SQUASHFS_ROOT_DIRECTORY} dpkg-query -W \
 	--showformat='${Package} ${Version}\n'  | tee  $ARCH_LIVE/casper/filesystem.manifest
 
 	cp -v  $ARCH_LIVE/casper/filesystem.manifest  $ARCH_LIVE/casper/filesystem.manifest-desktop
@@ -319,17 +321,17 @@ new_squashfs_for_isoimage(){
 	efi=""
 	fi 
 
-	sudo cp ${squashfs_root_directory}/boot/vmlinuz-*.*.**-**-generic $ARCH_LIVE/casper/vmlinuz"$efi"
+	sudo cp ${SQUASHFS_ROOT_DIRECTORY}/boot/vmlinuz-*.*.**-**-generic $ARCH_LIVE/casper/vmlinuz"$efi"
 
-	sudo cp ${squashfs_root_directory}/boot/initrd.img-*.*.**-**-generic $ARCH_LIVE/casper/initrd.lz	
+	sudo cp ${SQUASHFS_ROOT_DIRECTORY}/boot/initrd.img-*.*.**-**-generic $ARCH_LIVE/casper/initrd.lz	
 
-	sudo cp ${squashfs_root_directory}/boot/memtest86+.bin $ARCH_LIVE/casper/memtest86+.bin
+	sudo cp ${SQUASHFS_ROOT_DIRECTORY}/boot/memtest86+.bin $ARCH_LIVE/casper/memtest86+.bin
 	
 	echo "[1;12mDelete squashfs-root enviroment Y/n [0;39m"
      read  ans
    if [ "$ans" = "Y" ] || [ "$ans" = "y" ] || [ "$ans" = "yes" ] || [ "$ans" = "" ]; then
     
-     sudo rm -R ${squashfs_root_directory} 
+     sudo rm -R ${SQUASHFS_ROOT_DIRECTORY} 
      echo " ****Chroot environment deleted*****"
   
    fi
