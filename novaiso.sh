@@ -29,8 +29,8 @@ while read param ; do
 eval ${param}
 done < ~/.novaisorc
 
-if [ "$arch" = "x86_64" ]; then
-arch=amd64
+if [ "$ARCH_LIVECD" = "x86_64" ]; then
+ARCH_LIVECD=amd64
 efi=".efi"
 fi
 
