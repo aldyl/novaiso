@@ -422,6 +422,8 @@ EOF
 	
 	iso_linux
 	
+	touch $DISTRO
+	
 	mkdir -p $ARCH_LIVE/.disk
 	
 	cat <<EOF >  $ARCH_LIVE/.disk/base_components
