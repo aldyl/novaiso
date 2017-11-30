@@ -1,5 +1,34 @@
 #!/usr/bin/env bash
 
+#@Distro Nova @Version 6.0  @code_name 2017  @arch x86_64
+
+export DISTRO=$(lsb_release -is)
+
+export VERSION=$(lsb_release -rs)
+
+export CODENAME=$(lsb_release -cs)
+
+export ARCH_LIVECD=$(uname -m)
+
+export MIRRORREPOSITORY=http://10.128.60.100/nova/2017_prueba
+
+export COMPONENTS="principal,extendido"
+
+export SQUASHFS_ROOT_DIRECTORY=squashfs-root
+
+export PATH_TO_ISO_IMG=nova-escritorio-$VERSION-$ARCH_LIVE.iso
+
+#Installer for Nova
+NOVAINSTALLER="nova-escritorio ubiquity-frontend-gtk ubiquity-slideshow" 
+
+#Dont keep after installer
+NOINSTALLER="ubiquity ubiquity-frontend-gtk ubiquity-frontend-kde \
+        	ubiquity-slideshow casper lupin-casper live-initramfs user-setup discover1 xresprobe \
+	        os-prober libdebian-installer4"
+
+#Tools for Rescue live-cd
+RESCUE="gparted testdisk wipe partimage xfsprogs reiserfsprogs jfsutils ntfs-3g  dosfstools mtools"
+
 while read param ; do
 eval ${param}
 done < .novaisorc
@@ -11,7 +40,7 @@ fi
 
 show_default(){
         echo "[1;12m********************************************************************************[0;39m"
-       	echo "[1;24m###########                         Make a Chroot                    ###########[0;30m"
+       	echo "[1;24m###########              isonova Make new clean Chroot               ###########[0;30m"
         echo "[1;12m********************************************************************************[0;32m"
 	
     echo " "

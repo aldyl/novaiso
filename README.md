@@ -35,7 +35,7 @@ $ ln -sfv /path/to/the/cloned/project/novaiso.sh ~/bin/novaiso
 
 Usage
 
-This script use configure file located in ~/.novaisorc if not exist use default system settings.
+This script use configure file located in project folder ./novaisorc
 
 For example:
 

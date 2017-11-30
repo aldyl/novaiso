@@ -1,38 +1,33 @@
-#@Distro Nova @Version 6.0  @code_name 2017  @arch x86_64
+#Configure novaiso
 
-DISTRO=$(lsb_release -is)
+#Define architecture for live cd
 
-VERSION=$(lsb_release -rs)
-
-code_name=$(lsb_release -cs)
-
-arch=$(uname -m)
-
-#Repository Mirrors, the first is default.
-
-mirror_repository=( http://10.128.60.100/nova/2017_prueba                  \
-                    http://10.53.4.24/nova/2017                     \
-                    http://10.128.60.100/nova/2017_prueba            \
-                    http://10.128.60.100/nova/2017                    \
-                    http://10.128.60.100/nova/2015 )
-
-components="principal,extendido"
-componentsMirror="principal extendido"
+#ARCH_LIVECD=amd64
 
 #Directory for make squashfs
 
-ARCH_LIVE=$arch
+#SQUASHFS_ROOT_DIRECTORY=squashfs-root
 
-squashfs_root_directory=squashfs-root
+#Repository Mirrors
+#MIRRORREPOSITORY=http://10.128.60.100/nova/2017_prueba
+#MIRRORREPOSITORY=http://10.53.4.24/nova/2017
+#MIRRORREPOSITORY=http://10.128.60.100/nova/2017  
+#MIRRORREPOSITORY=http://10.128.60.100/nova/2015
 
-#Where save the iso-image
+#Componets of Mirrors
+#COMPONENTS="principal,extendido"
 
-PATH_TO_ISO_IMG=../nova-escritorio-$VERSION-$ARCH_LIVE.iso
+#Where we save the iso-image
 
-NOVAINSTALLER="nova-escritorio ubiquity-frontend-gtk ubiquity-slideshow" 
+#PATH_TO_ISO_IMG=nova-escritorio-$VERSION-$ARCH_LIVE.iso
 
-NOINSTALLER="ubiquity ubiquity-frontend-gtk ubiquity-frontend-kde \
-        	ubiquity-slideshow casper lupin-casper live-initramfs user-setup discover1 xresprobe \
-	        os-prober libdebian-installer4"
+#Installer for Nova
+#NOVAINSTALLER="nova-escritorio ubiquity-frontend-gtk ubiquity-slideshow" 
 
-RESCUE="gparted testdisk wipe partimage xfsprogs reiserfsprogs jfsutils ntfs-3g  dosfstools mtools"
+#Dont keep after installer
+#NOINSTALLER="ubiquity ubiquity-frontend-gtk ubiquity-frontend-kde \
+#        	ubiquity-slideshow casper lupin-casper live-initramfs user-setup discover1 xresprobe \
+#	        os-prober libdebian-installer4"
+
+#Tools for Rescue live-cd
+#RESCUE="gparted testdisk wipe partimage xfsprogs reiserfsprogs jfsutils ntfs-3g  dosfstools mtools"
