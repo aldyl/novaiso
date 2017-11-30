@@ -15,7 +15,7 @@ Prerequisites
 
 Before using this scripts make sure that this packages are installed in your system.
 
-1. 
+1. debootstrap
 2. 
 3. 
 4. 

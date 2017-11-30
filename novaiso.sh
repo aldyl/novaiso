@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-#@Distro Nova @Version 6.0  @code_name 2017  @arch x86_64
+#@Distro Nova @Version 6.0  @CODENAME 2017  @arch x86_64
 
 export DISTRO=$(lsb_release -is)
 
@@ -9,8 +9,6 @@ export VERSION=$(lsb_release -rs)
 export CODENAME=$(lsb_release -cs)
 
 export ARCH_LIVECD=$(uname -m)
-
-export COMPONENTS="principal,extendido"
 
 export SQUASHFS_ROOT_DIRECTORY=squashfs-root
 
@@ -38,89 +36,21 @@ fi
 
 show_default(){
         echo "[1;12m********************************************************************************[0;39m"
-       	echo "[1;24m###########              isonova Make new clean Chroot               ###########[0;30m"
+       	echo "[1;24m###########              isonova make new clean chroot               ###########[0;30m"
         echo "[1;12m********************************************************************************[0;32m"
 	
     echo " "
-    echo "Distribution = ${DISTRO}"
+    echo "Distribution =  ${DISTRO}"
     echo "Version      = "$VERSION""
-    echo "Code Name    = "$code_name""
-    echo "Architecture = "$arch""
-    echo "Production Repository"
-    echo ""$mirror_repository""
-    echo "Components   = "$components""
+    echo "Code Name    = "$CODENAME""
+    echo "Architecture = "$ARCH_LIVECD""
+    echo "Mirror Repository"
+    echo ""$MIRRORREPOSITORY""
+    echo "Components   = "$COMPONENTS""
     echo "Debootstrap Chroot = ${squashfs_root_directory}"
-
+    echo "The default directory for the chroot is the current folder"
 }
 
-setCodeName(){
-     echo "Select Code Name"
-     echo "1- 2017"
-     echo "2- 2015"
-      read  cn
-      case $cn in
-
-       1) code_name="2017"
-          VERSION="6.0"
-           ;;
-       2) code_name="2015"
-          VERSION="5.0"
-           ;;
-       *)  echo "You must select a valid option ..."
-			clear
-			setCodeName
-			;;
-	esac
-
-}
-
-setArchitecture(){
-     echo "Select Architecture"
-     echo "1- 64 bits"
-     echo "2- 32 bits"
-      read  cn
-      case $cn in
-
-       1) arch="amd64"
-          ARCH_LIVE=$arch
-           ;;
-       2) arch="i386"
-          ARCH_LIVE=$arch
-           ;;
-       *)  echo "You must select a valid option ..."
-			clear
-			setArchitecture
-			;;
-	esac
-
-}
-
-setMirror(){
-   
-    echo "Select Mirror Number"
-    i=0 
-    for item in ${mirror_repository[*]};
-    do
-        printf "$i-  %s\n" $item
-        ((i++))
-    done
-
-       read  cn
-     
-    mirror_repository=${mirror_repository[$cn]}
-
-}
-
-setDirectory(){
-      echo "The default directory for the chroot is the current folder"
-      echo "Type the new address if you want to change and press ENTER"
-      read  cn
-      if [ "$cn" != "" ] ; then
-        echo "New direction: "$cn""
-        squashfs_root_directory=$cn
-	  fi
-
-}
 
 change_default(){
 
@@ -129,17 +59,7 @@ change_default(){
    if [ "$ans" = "Y" ] || [ "$ans" = "y" ] || [ "$ans" = "yes" ] || [ "$ans" = "" ]; then
      echo " ****Chroot environment configured*****"
    else
-     clear
-     setCodeName
-     clear
-     setArchitecture
-     clear
-     setMirror
-     clear
-     setDirectory
-     clear
-     show_default
-     change_default
+     menu
    fi
 
 }
@@ -159,7 +79,7 @@ configure_debootstrap() {
     sudo rm -R ${squashfs_root_directory}
     mkdir -p ${squashfs_root_directory}
     #Instalando el debootstrap
-    sudo debootstrap --arch=$arch --components=$components $code_name ${squashfs_root_directory} $mirror_repository
+    sudo debootstrap --arch=$arch --components=$COMPONENTS $CODENAME ${squashfs_root_directory} $MIRRORREPOSITORY
     #Sistema listo,
 
 	}
@@ -318,7 +238,7 @@ install_app(){
 	
 	sudo cp /etc/resolv.conf ${squashfs_root_directory}/etc/resolv.conf
 	  
-    sudo echo "deb $mirror_repository $code_name $componentsMirror" > /tmp/sources.list
+    sudo echo "deb $MIRRORREPOSITORY $CODENAME $componentsMirror" > /tmp/sources.list
     sudo cp /tmp/sources.list ${squashfs_root_directory}/etc/apt/sources.list
 	
 	echo "Comenzar a Modificar"
@@ -512,7 +432,7 @@ EOF
 	cecho "full_cd/single" > $ARCH_LIVE/.disk/cd_type
 
     cat <<EOF >  $ARCH_LIVE/README.diskdefines
-#define DISKNAME  Nova $VERSION LTS "$code_name" - Release $ARCH_LIVE
+#define DISKNAME  Nova $VERSION LTS "$CODENAME" - Release $ARCH_LIVE
 #define TYPE  binary
 #define TYPEbinary  1
 #define ARCH  i386
@@ -530,7 +450,7 @@ create_iso(){
 	echo "Create iso for $ARCH_LIVE"
 	sudo chmod 777 -R $ARCH_LIVE
 
-	echo "Nova $VERSION $code_name - Release $ARCH_LIVE ($(date +%Y%m%d))" > $ARCH_LIVE/.disk/info
+	echo "Nova $VERSION $CODENAME - Release $ARCH_LIVE ($(date +%Y%m%d))" > $ARCH_LIVE/.disk/info
 
 	cd $ARCH_LIVE && find . -type f -print0 | xargs -0 md5sum | grep -v "\./md5sum.txt" > md5sum.txt
 
