@@ -16,16 +16,14 @@ Prerequisites
 Before using this scripts make sure that this packages are installed in your system.
 
 1. debootstrap
-2. 
-3. 
-4. 
-5. 
+2. xorriso
+3. mkisofs
 
 Installing
 
 To start using this tools just clone this repository:
 
-$ git clone git@/novaiso.git
+$ git clone git@path/to/proyect/novaiso.git
 
 
 Make all the executables accesible for bash, without the extension. For example:

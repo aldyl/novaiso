@@ -244,11 +244,11 @@ install_app(){
 	echo "Start app installation"
 	mount_fs_chroot
 
-	#I chroot
+	#In chroot
 	install_app_chroot
     clean_chroot
 
-	#Se ha terminado el chroot
+	#Finish chroot
 	umount_fs_chroot
 	
 	echo "Finish app installation"
@@ -259,7 +259,7 @@ modify_squashfs(){
 	
 	sudo unsquashfs ${ARCH_LIVE}/casper/filesystem.squashfs -d ${SQUASHFS_ROOT_DIRECTORY}
 
-	sudo mv $ARCH_LIVE/casper/filesystem.squashfs $ARCH_LIVE/casper/filesystem.squashfs.save
+	sudo mv ${ARCH_LIVE}/casper/filesystem.squashfs $ARCH_LIVE/casper/filesystem.squashfs.save
 
 	mount_fs_chroot
 
@@ -271,7 +271,7 @@ modify_squashfs(){
 
 compress_squashfs(){
 	
-	echo "Generando ordenes de cierre"
+	echo "Close chroot"
 
 	mount_fs_chroot
 	
@@ -325,9 +325,8 @@ new_squashfs_for_isoimage(){
 
 	sudo cp ${SQUASHFS_ROOT_DIRECTORY}/boot/initrd.img-*.*.**-**-generic $ARCH_LIVE/casper/initrd.lz	
 
-	sudo cp ${SQUASHFS_ROOT_DIRECTORY}/boot/memtest86+.bin $ARCH_LIVE/casper/memtest86+.bin
-	
-	echo "[1;12mDelete squashfs-root enviroment Y/n [0;39m"
+		
+	echo "[1;12mDelete decompresed squashfs-root enviroment Y/n [0;39m"
      read  ans
    if [ "$ans" = "Y" ] || [ "$ans" = "y" ] || [ "$ans" = "yes" ] || [ "$ans" = "" ]; then
     
@@ -456,7 +455,7 @@ create_iso(){
 
 	cd $ARCH_LIVE && find . -type f -print0 | xargs -0 md5sum | grep -v "\./md5sum.txt" > md5sum.txt
 
-	VOLNAME=Nova-$VERSION-$ARCH_LIVE-$(date +%y%m%d)
+	VOLNAME=$DISTRO-$VERSION-$ARCH_LIVE-$(date +%y%m%d)
 
 	ISOLINUXBIN=isolinux/isolinux.bin 
 
@@ -497,9 +496,18 @@ menu(){
 	read -p "[1;12m-> [0;39m" num
 	case $num in
 		1)	show_default
-            change_default
+		    change_default
             configure_debootstrap
             install_app
+            modify_squashfs
+            compress_squashfs
+            new_squashfs_for_isoimage
+            setting_for_boot
+            create_iso
+            
+    echo "[1;12m********************************************************************************[0;39m"
+	echo "[1;12m*[0;39m          			        TERMINADO        		     [1;12m*[0;39m"
+	echo "[1;12m********************************************************************************[0;39m"
 			menu
 			;;
 			
