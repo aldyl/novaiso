@@ -10,8 +10,6 @@ export CODENAME=$(lsb_release -cs)
 
 export ARCH_LIVECD=$(uname -m)
 
-export MIRRORREPOSITORY=http://10.128.60.100/nova/2017_prueba
-
 export COMPONENTS="principal,extendido"
 
 export SQUASHFS_ROOT_DIRECTORY=squashfs-root

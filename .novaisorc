@@ -1,5 +1,11 @@
 #Configure novaiso
 
+#DISTRO=nova
+
+#VERSION=6.0
+
+#CODENAME=2017
+
 #Define architecture for live cd
 
 #ARCH_LIVECD=amd64
@@ -9,13 +15,13 @@
 #SQUASHFS_ROOT_DIRECTORY=squashfs-root
 
 #Repository Mirrors
-#MIRRORREPOSITORY=http://10.128.60.100/nova/2017_prueba
+MIRRORREPOSITORY=http://10.128.60.100/nova/2017_prueba
 #MIRRORREPOSITORY=http://10.53.4.24/nova/2017
 #MIRRORREPOSITORY=http://10.128.60.100/nova/2017  
 #MIRRORREPOSITORY=http://10.128.60.100/nova/2015
 
 #Componets of Mirrors
-#COMPONENTS="principal,extendido"
+COMPONENTS="principal,extendido"
 
 #Where we save the iso-image
 
