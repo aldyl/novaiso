@@ -27,7 +27,7 @@ RESCUE="gparted testdisk wipe partimage xfsprogs reiserfsprogs jfsutils ntfs-3g 
 
 while read param ; do
 eval ${param}
-done < .novaisorc
+done < ~/.novaisorc
 
 if [ "$arch" = "x86_64" ]; then
 arch=amd64
