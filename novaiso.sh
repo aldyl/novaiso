@@ -550,6 +550,22 @@ create_iso(){
     echo  "LiveCD are ready for use"
 }
 
+create_livecd_repository(){
+	
+	 echo  "Make LiveCD Repository"
+	
+     
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	}
+
 menu(){
 	echo 
 	echo
@@ -568,8 +584,9 @@ menu(){
 	echo -e "\e[1;12m	 6 - Comprimir el squashfs.filesystem \e[0;39m"
 	echo -e "\e[1;12m	 7 - Crear el Manifiesto del squashfs.filesystem \e[0;39m"
 	echo -e "\e[1;12m	 8 - Crear estructura de booteo con grub e isolinux \e[0;39m"
-	echo -e "\e[1;12m	 9 - Crear la imagen Iso \e[0;39m"
-	echo -e "\e[1;12m	 10 - Salir\e[0;39m"
+	echo -e "\e[1;12m	 9 - Crear un repositorio para el Live-CD \e[0;39m"
+	echo -e "\e[1;12m	10 - Crear la imagen Iso \e[0;39m"
+    echo -e "\e[1;12m	11 - Salir\e[0;39m"
 	echo -e "\e[1;12m-> \e[0;39m"
 	read  num
 	case $num in
@@ -618,11 +635,14 @@ menu(){
 			menu
 			;;
 			
-		9)	create_iso |  $LOGFILE
+		9)  create_livecd_repository |  $LOGFILE
+			menu
+			;;
+		10) create_iso |  $LOGFILE
 			menu
 			;;
 		
-		10) exit 0
+		11) exit 0
 			;;
 		*) 	echo "Debe seleccionar una opción válida..."
 			clear
