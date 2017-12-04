@@ -4,6 +4,8 @@ set -e
 SCRIPT=$(readlink -m $(type -p $0 ))      # Full path to script
 PROYECT_BASE=$(dirname "${SCRIPT}")         # Directory script is run in
 
+LOGFILE="tee -a novaiso.log" 
+
 #@Distro Nova @Version 6.0  @CODENAME 2017  @arch x86_64
 
 export DISTRO=$(lsb_release -is)
@@ -51,7 +53,7 @@ ARCH_LIVECD=amd64
 efi=".efi"
 fi
 
-show_default(){
+show_default() {
     clear
         echo -e "\e[1;12m********************************************************************************\e[0;49m"
        	echo -e "\e[1;24m###########              isonova make new clean chroot               ###########\e[0;30m"
@@ -479,10 +481,15 @@ create_iso(){
 	
 	echo  "Create iso for $ARCH_LIVECD"
 	
+	echo  "Set 777 permissions"
 	sudo chmod 777 -R $PWD/$ARCH_LIVECD
 
+    echo  "Set Volume Name Nova $VERSION $CODENAME - Release $ARCH_LIVECD ($(date +%Y%m%d))"
+    
 	echo  "Nova $VERSION $CODENAME - Release $ARCH_LIVECD ($(date +%Y%m%d))" > $PWD/$ARCH_LIVECD/.disk/info
 
+    echo  "Computing md5sum for LiveCD"
+    
 	cd $PWD/$ARCH_LIVECD && find . -type f -print0 | xargs -0 md5sum | grep -v "\./md5sum.txt" > md5sum.txt
 
 	VOLNAME=$DISTRO-$VERSION-$ARCH_LIVECD-$(date +%y%m%d)
@@ -495,6 +502,8 @@ create_iso(){
 	
 	EFIBOOT=boot/grub/efi.img 
 	
+	echo  "Building LiveCD"
+	
 	if [ "$ARCH_LIVECD" = "amd64" ]; then
 	 
     xorriso -as  mkisofs -isohybrid-mbr $ISOHYBRIDMBR -b $ISOLINUXBIN  -c $ISOLINUXCAT -no-emul-boot -boot-load-size 4 -boot-info-table -eltorito-alt-boot -e $EFIBOOT -no-emul-boot -isohybrid-gpt-basdat -o "$PATH_TO_ISO_IMG" -r "." --sort-weight 0 / --sort-weight 1 /boot -joliet -joliet-long -volid $VOLNAME
@@ -506,9 +515,15 @@ create_iso(){
     fi
     
     cd ..
+    
+    echo  "LiveCD are ready for use"
 }
 
 menu(){
+	echo 
+	echo
+	echo
+	echo
 	clear
    	echo -e "\e[1;12m********************************************************************************\e[0;39m"
 	echo -e "\e[1;12m*\e[0;39m                   Script para crear Personalizaciones de Nova         \e[1;12m*\e[0;39m"
@@ -527,15 +542,15 @@ menu(){
 	echo -e "\e[1;12m-> \e[0;39m"
 	read  num
 	case $num in
-		1)	show_default
-		    change_default
-            configure_debootstrap
-            install_app
-            modify_squashfs
-            compress_squashfs
-            new_squashfs_for_isoimage
-            setting_for_boot
-            create_iso
+		1)	show_default                      |  $LOGFILE
+		    change_default                    |  $LOGFILE
+            configure_debootstrap             |  $LOGFILE
+            install_app                       |  $LOGFILE
+            modify_squashfs                   |  $LOGFILE
+            compress_squashfs                 |  $LOGFILE
+            new_squashfs_for_isoimage         |  $LOGFILE
+            setting_for_boot                  |  $LOGFILE
+            create_iso                        |  $LOGFILE
             
     echo -e "\e[1;12m********************************************************************************\e[0;39m"
 	echo -e "\e[1;12m*\e[0;39m          			        TERMINADO        		     \e[1;12m*\e[0;39m"
@@ -543,36 +558,36 @@ menu(){
 			menu
 			;;
 			
-		2)	show_default
-            change_default
+		2)	show_default  |  $LOGFILE
+            change_default |  $LOGFILE
 			menu
 			;;
 			
-		3)	configure_debootstrap
+		3)	configure_debootstrap |  $LOGFILE
 			menu
 			;;
 			
-		4) 	install_app
+		4) 	install_app |  $LOGFILE
 			menu
 			;;
 			
-	    5) 	modify_squashfs
+	    5) 	modify_squashfs |  $LOGFILE
 			menu
 			;;
 			
-		6)	compress_squashfs
+		6)	compress_squashfs |  $LOGFILE
 			menu
 			;;
 		
-		7)	new_squashfs_for_isoimage
+		7)	new_squashfs_for_isoimage |  $LOGFILE
 			menu
 			;;
 			
-		8)	setting_for_boot
+		8)	setting_for_boot |  $LOGFILE
 			menu
 			;;
 			
-		9)	create_iso
+		9)	create_iso |  $LOGFILE
 			menu
 			;;
 		
@@ -584,5 +599,7 @@ menu(){
 			;;
 	esac
 }
+        date | $LOGFILE
+      
+        menu 
 
-menu
