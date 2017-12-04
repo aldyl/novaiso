@@ -31,12 +31,14 @@ Make all the executables accesible for bash, without the extension. For example:
 $ mkdir ~/bin
 
 $ ln -sfv /path/to/the/cloned/project/novaiso.sh ~/bin/novaiso
+
 Easy form, cd /path/to/the/cloned/project
-$ln -sfv "$PWD"/novaiso.sh ~/bin/novaiso
+$ln -sfv $PWD/novaiso.sh ~/bin/novaiso
 
 Copy configuration file to home folder.
 
 cp /path/to/the/cloned/project/.novaisorc ~/.novaisorc
+
 Easy form, cd /path/to/the/cloned/project
 $cp "$PWD"/.novaisorc ~/.novaisorc
 

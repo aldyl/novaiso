@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+set -e
+
+SCRIPT=$(readlink -m $(type -p $0 ))      # Full path to script
+PROYECT_BASE=$(dirname "${SCRIPT}")         # Directory script is run in
 
 #@Distro Nova @Version 6.0  @CODENAME 2017  @arch x86_64
 
@@ -328,6 +332,7 @@ new_squashfs_for_isoimage(){
 	sed -i "/${i}/d" $PWD/$ARCH_LIVECD/casper/filesystem.manifest-desktop;
 	done
 
+	echo  "Filesystem Size"
 	printf $(du -sx --block-size=1 $PWD/$ARCH_LIVECD/casper/filesystem.squashfs | \
 	cut -f1) > $PWD/$ARCH_LIVECD/casper/filesystem.size
 
@@ -336,11 +341,14 @@ new_squashfs_for_isoimage(){
 
 	if [ "$ARCH_LIVECD" = "amd64" ];
 	then
+		echo  "vmlinux uefi signed"
 		sudo cp ${SQUASHFS_ROOT_DIRECTORY}/boot/vmlinuz-*.*.**-**-generic.efi.signed $PWD/$ARCH_LIVECD/casper/vmlinuz"$efi"
 	else
+	    echo  "vmlinux legacy"
 		sudo cp ${SQUASHFS_ROOT_DIRECTORY}/boot/vmlinuz-*.*.**-**-generic $PWD/$ARCH_LIVECD/casper/vmlinuz"$efi"
 	fi 
 
+    echo  "Copy initrd"
 	sudo cp ${SQUASHFS_ROOT_DIRECTORY}/boot/initrd.img-*.*.**-**-generic $PWD/$ARCH_LIVECD/casper/initrd.lz	
 
 		
@@ -359,11 +367,11 @@ grub_efi(){
 	
 	mkdir -p $PWD/$ARCH_LIVECD
 	
-	cp grub.tar.lzma $PWD/$ARCH_LIVECD
+	cp "${PROYECT_BASE}"/grub.tar.lzma $PWD/$ARCH_LIVECD
 
 	cd $PWD/$ARCH_LIVECD
 	
-	tar --lzma -xvpf grub.tar.lzma 
+	tar --lzma -xvpf grub.tar.lzma > /dev/null
 	
 	cd ..
 	
@@ -395,11 +403,11 @@ iso_linux(){
 	
 	mkdir -p $PWD/$ARCH_LIVECD
 	
-	cp isolinux.tar.lzma $PWD/$ARCH_LIVECD
+	cp "${PROYECT_BASE}"/isolinux.tar.lzma $PWD/$ARCH_LIVECD
 	
 	cd $PWD/$ARCH_LIVECD
 	
-	tar --lzma -xvpf isolinux.tar.lzma 
+	tar --lzma -xvpf isolinux.tar.lzma > /dev/null
 	
 	cd ..
 	
@@ -441,7 +449,7 @@ EOF
 	
 	iso_linux
 	
-	touch $DISTRO
+	touch $PWD/$ARCH_LIVECD/$DISTRO
 	
 	mkdir -p $PWD/$ARCH_LIVECD/.disk
 	
@@ -451,7 +459,7 @@ extendido
 EOF
 	touch  $PWD/$ARCH_LIVECD/.disk/base_installable
 
-	cecho -e "full_cd/single" > $PWD/$ARCH_LIVECD/.disk/cd_type
+	echo -e "full_cd/single" > $PWD/$ARCH_LIVECD/.disk/cd_type
 
     cat <<EOF >  $PWD/$ARCH_LIVECD/README.diskdefines
 #define DISKNAME  Nova $VERSION LTS "$CODENAME" - Release $ARCH_LIVECD
@@ -469,7 +477,8 @@ EOF
 
 create_iso(){
 	
-	echo  "Create iso for $ARCH_LIVE"
+	echo  "Create iso for $ARCH_LIVECD"
+	
 	sudo chmod 777 -R $PWD/$ARCH_LIVECD
 
 	echo  "Nova $VERSION $CODENAME - Release $ARCH_LIVECD ($(date +%Y%m%d))" > $PWD/$ARCH_LIVECD/.disk/info
@@ -500,6 +509,7 @@ create_iso(){
 }
 
 menu(){
+	clear
    	echo -e "\e[1;12m********************************************************************************\e[0;39m"
 	echo -e "\e[1;12m*\e[0;39m                   Script para crear Personalizaciones de Nova         \e[1;12m*\e[0;39m"
 	echo -e "\e[1;12m********************************************************************************\e[0;39m"
