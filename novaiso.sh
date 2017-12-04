@@ -12,7 +12,7 @@ export ARCH_LIVECD=$(uname -m)
 
 export SQUASHFS_ROOT_DIRECTORY=squashfs-root
 
-export PATH_TO_ISO_IMG=nova-escritorio-$VERSION-$ARCH_LIVE.iso
+export PATH_TO_ISO_IMG=../nova-escritorio-$VERSION-$ARCH_LIVE.iso
 
 #Installer for Nova
 NOVAINSTALLER="nova-escritorio ubiquity-frontend-gtk ubiquity-slideshow" 
@@ -25,6 +25,19 @@ NOINSTALLER="ubiquity ubiquity-frontend-gtk ubiquity-frontend-kde \
 #Tools for Rescue live-cd
 RESCUE="gparted testdisk wipe partimage xfsprogs reiserfsprogs jfsutils ntfs-3g  dosfstools mtools"
 
+#Tools for disks format and some devices
+DISKFS="exfat-fuse exfat-utils hfsplus hfsutils ntfs-3g"
+
+#Tools for Android and Iphone
+ANDROIDIPHONE="mtp-tools ipheth-utils ideviceinstaller ifuse"
+
+#Disk temperature Sensors
+HDDTEMP="lm-sensors hddtemp"
+
+#Advance Power Save for Laptops
+UPSAVE="tlp tlp-rdw"
+# Active with sudo tlp start
+
 while read param ; do
 eval ${param}
 done < ~/.novaisorc
@@ -35,29 +48,30 @@ efi=".efi"
 fi
 
 show_default(){
-        echo "[1;12m********************************************************************************[0;39m"
-       	echo "[1;24m###########              isonova make new clean chroot               ###########[0;30m"
-        echo "[1;12m********************************************************************************[0;32m"
+    clear
+        echo -e "\e[1;12m********************************************************************************\e[0;39m"
+       	echo -e "\e[1;24m###########              isonova make new clean chroot               ###########\e[0;30m"
+        echo -e "\e[1;12m********************************************************************************\e[0;32m"
 	
-    echo " "
-    echo "Distribution =  ${DISTRO}"
-    echo "Version      = "$VERSION""
-    echo "Code Name    = "$CODENAME""
-    echo "Architecture = "$ARCH_LIVECD""
-    echo "Mirror Repository"
-    echo ""$MIRRORREPOSITORY""
-    echo "Components   = "$COMPONENTS""
-    echo "Debootstrap Chroot = ${SQUASHFS_ROOT_DIRECTORY}"
-    echo "The default directory for the chroot is the current folder"
+    echo -e " "
+    echo -e "Distribution =  ${DISTRO}"
+    echo -e "Version      = "$VERSION""
+    echo -e "Code Name    = "$CODENAME""
+    echo -e "Architecture = "$ARCH_LIVECD""
+    echo -e "Mirror Repository"
+    echo -e ""$MIRRORREPOSITORY""
+    echo -e "Components   = "$COMPONENTS""
+    echo -e "Debootstrap Chroot = ${SQUASHFS_ROOT_DIRECTORY}"
+    echo -e "The default directory for the chroot is the current folder"
 }
 
 
 change_default(){
 
-     echo "[1;12mThe above information is truly? Y/n [0;39m"
+     echo -e "\e[1;12mThe above information is truly? Y/n \e[0;39m"
      read  ans
    if [ "$ans" = "Y" ] || [ "$ans" = "y" ] || [ "$ans" = "yes" ] || [ "$ans" = "" ]; then
-     echo " ****Chroot environment configured*****"
+     echo -e " ****Chroot environment configured*****"
    else
      menu
    fi
@@ -67,9 +81,9 @@ change_default(){
 configure_debootstrap() {
 
 	clear
-    echo "[1;12m################################################################################[0;39m"
-	echo "[1;12m###########                  Begining Debootstrap                    ###########[0;39m"
-	echo "[1;12m################################################################################[0;39m"
+    echo -e "\e[1;12m################################################################################\e[0;39m"
+	echo -e "\e[1;12m###########                  Begining Debootstrap                    ###########\e[0;39m"
+	echo -e "\e[1;12m################################################################################\e[0;39m"
     
      
     #instalando debootstrap
@@ -172,9 +186,9 @@ ln -s /bin/true /usr/sbin/invoke-rc.d"
 
 	list_app(){
 
-	apt-get install --yes  $NOVAINSTALLER $RESCUE	
+	apt-get install --yes  $NOVAINSTALLER $RESCUE $DISKFS $ANDROIDIPHONE $HDDTEMP $UPSAVE 	
 
-	echo "[1;31m********************************************************************************[0;39m"
+	echo -e "\e[1;31m********************************************************************************\e[0;39m"
 	echo "Finish package list..."
 	
 	}
@@ -185,7 +199,7 @@ ln -s /bin/true /usr/sbin/invoke-rc.d"
 	echo "Fixing packages..."
 	apt-get install -f
 
-	echo "[1;31m********************************************************************************[0;39m"
+	echo -e "\e[1;31m********************************************************************************\e[0;39m"
 	echo "Update packages"
 	apt-get update
 
@@ -196,21 +210,21 @@ ln -s /bin/true /usr/sbin/invoke-rc.d"
 	export LC_ALL=C
 	
 	
-	echo "[1;31m********************************************************************************[0;39m"
+	echo -e "\e[1;31m********************************************************************************\e[0;39m"
 	echo "DBus..."
 	apt-get install --yes dbus
 
 	dbus-uuidgen > /var/lib/dbus/machine-id
 
-	echo "[1;31m********************************************************************************[0;39m"
+	echo -e "\e[1;31m********************************************************************************\e[0;39m"
 	echo "Nova Base .."
 	apt-get install --yes nova-base
 
-	echo "[1;31m********************************************************************************[0;39m"
+	echo -e "\e[1;31m********************************************************************************\e[0;39m"
 	echo "Linux Image..."
 	apt-get install --yes casper
 	apt-get install --yes linux-generic
-	echo "[1;31m********************************************************************************[0;39m"
+	echo -e "\e[1;31m********************************************************************************\e[0;39m"
 	
 	echo "Fixing packages..."
 	apt-get install -f
@@ -231,14 +245,14 @@ EOF
 	
 install_app(){
 
-	echo "Set Network Configuration"
+	echo  "Set Network Configuration"
 	sudo cp /etc/hosts ${SQUASHFS_ROOT_DIRECTORY}/etc/hosts
 	
 	sudo cp /etc/resolv.conf ${SQUASHFS_ROOT_DIRECTORY}/etc/resolv.conf
 	
-	componentsMirror=$(echo $COMPONENTS | sed s/,/" "/g) 
+	componentsMirror=$(echo -e $COMPONENTS | sed s/,/" "/g) 
 	  
-    sudo echo "deb $MIRRORREPOSITORY $CODENAME $componentsMirror" > /tmp/sources.list
+    sudo echo  "deb $MIRRORREPOSITORY $CODENAME $componentsMirror" > /tmp/sources.list
     sudo cp /tmp/sources.list ${SQUASHFS_ROOT_DIRECTORY}/etc/apt/sources.list
 	
 	echo "Start app installation"
@@ -271,7 +285,7 @@ modify_squashfs(){
 
 compress_squashfs(){
 	
-	echo "Close chroot"
+	echo  "Close chroot"
 
 	mount_fs_chroot
 	
@@ -292,7 +306,7 @@ compress_squashfs(){
 
 new_squashfs_for_isoimage(){
 
-	echo "Create filesystem manifest"
+	echo  "Create filesystem manifest"
 
 	#Create the folder casper if not exist
     mkdir -p  $ARCH_LIVE/casper
@@ -326,12 +340,12 @@ new_squashfs_for_isoimage(){
 	sudo cp ${SQUASHFS_ROOT_DIRECTORY}/boot/initrd.img-*.*.**-**-generic $ARCH_LIVE/casper/initrd.lz	
 
 		
-	echo "[1;12mDelete decompresed squashfs-root enviroment Y/n [0;39m"
+	echo -e "\e[1;12mDelete decompresed squashfs-root enviroment Y/n \e[0;39m"
      read  ans
    if [ "$ans" = "Y" ] || [ "$ans" = "y" ] || [ "$ans" = "yes" ] || [ "$ans" = "" ]; then
     
      sudo rm -R ${SQUASHFS_ROOT_DIRECTORY} 
-     echo " ****Chroot environment deleted*****"
+     echo  " ****Chroot environment deleted***** "
   
    fi
 	
@@ -432,7 +446,7 @@ extendido
 EOF
 	touch  $ARCH_LIVE/.disk/base_installable
 
-	cecho "full_cd/single" > $ARCH_LIVE/.disk/cd_type
+	cecho -e "full_cd/single" > $ARCH_LIVE/.disk/cd_type
 
     cat <<EOF >  $ARCH_LIVE/README.diskdefines
 #define DISKNAME  Nova $VERSION LTS "$CODENAME" - Release $ARCH_LIVE
@@ -450,10 +464,10 @@ EOF
 
 create_iso(){
 	
-	echo "Create iso for $ARCH_LIVE"
+	echo  "Create iso for $ARCH_LIVE"
 	sudo chmod 777 -R $ARCH_LIVE
 
-	echo "Nova $VERSION $CODENAME - Release $ARCH_LIVE ($(date +%Y%m%d))" > $ARCH_LIVE/.disk/info
+	echo  "Nova $VERSION $CODENAME - Release $ARCH_LIVE ($(date +%Y%m%d))" > $ARCH_LIVE/.disk/info
 
 	cd $ARCH_LIVE && find . -type f -print0 | xargs -0 md5sum | grep -v "\./md5sum.txt" > md5sum.txt
 
@@ -481,21 +495,22 @@ create_iso(){
 }
 
 menu(){
-   	echo "[1;12m********************************************************************************[0;39m"
-	echo "[1;12m*[0;39m                   Script para crear Personalizaciones de Nova         [1;12m*[0;39m"
-	echo "[1;12m********************************************************************************[0;39m"
-	echo "[1;12mProcesos para crear la personalizacion de NOVA: [0;39m"
-	echo "[1;12m	 1 - Proceso Completo[0;39m"
-	echo "[1;12m	 2 - Configurar el debootstrap[0;39m"
-	echo "[1;12m	 3 - Crear chroot con debootstrap[0;39m"
-	echo "[1;12m	 4 - Instalar las app de la Personalizacion [0;39m"
-	echo "[1;12m	 5 - Modificar y Actualizar las app de la Personalizacion [0;39m"
-	echo "[1;12m	 6 - Comprimir el squashfs.filesystem [0;39m"
-	echo "[1;12m	 7 - Crear el Manifiesto del squashfs.filesystem [0;39m"
-	echo "[1;12m	 8 - Crear estructura de booteo con grub e isolinux [0;39m"
-	echo "[1;12m	 9 - Crear la imagen Iso [0;39m"
-	echo "[1;12m	 10 - Salir[0;39m"
-	read -p "[1;12m-> [0;39m" num
+   	echo -e "\e[1;12m********************************************************************************\e[0;39m"
+	echo -e "\e[1;12m*\e[0;39m                   Script para crear Personalizaciones de Nova         \e[1;12m*\e[0;39m"
+	echo -e "\e[1;12m********************************************************************************\e[0;39m"
+	echo -e "\e[1;12mProcesos para crear la personalizacion de NOVA: \e[0;39m"
+	echo -e "\e[1;12m	 1 - Proceso Completo\e[0;39m"
+	echo -e "\e[1;12m	 2 - Configurar el debootstrap\e[0;39m"
+	echo -e "\e[1;12m	 3 - Crear chroot con debootstrap\e[0;39m"
+	echo -e "\e[1;12m	 4 - Instalar las app de la Personalizacion \e[0;39m"
+	echo -e "\e[1;12m	 5 - Modificar y Actualizar las app de la Personalizacion \e[0;39m"
+	echo -e "\e[1;12m	 6 - Comprimir el squashfs.filesystem \e[0;39m"
+	echo -e "\e[1;12m	 7 - Crear el Manifiesto del squashfs.filesystem \e[0;39m"
+	echo -e "\e[1;12m	 8 - Crear estructura de booteo con grub e isolinux \e[0;39m"
+	echo -e "\e[1;12m	 9 - Crear la imagen Iso \e[0;39m"
+	echo -e "\e[1;12m	 10 - Salir\e[0;39m"
+	echo -e "\e[1;12m-> \e[0;39m"
+	read  num
 	case $num in
 		1)	show_default
 		    change_default
@@ -507,9 +522,9 @@ menu(){
             setting_for_boot
             create_iso
             
-    echo "[1;12m********************************************************************************[0;39m"
-	echo "[1;12m*[0;39m          			        TERMINADO        		     [1;12m*[0;39m"
-	echo "[1;12m********************************************************************************[0;39m"
+    echo -e "\e[1;12m********************************************************************************\e[0;39m"
+	echo -e "\e[1;12m*\e[0;39m          			        TERMINADO        		     \e[1;12m*\e[0;39m"
+	echo -e "\e[1;12m********************************************************************************\e[0;39m"
 			menu
 			;;
 			
@@ -546,7 +561,7 @@ menu(){
 			menu
 			;;
 		
-		10) 	exit 0
+		10) exit 0
 			;;
 		*) 	echo "Debe seleccionar una opción válida..."
 			clear
