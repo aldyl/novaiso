@@ -49,7 +49,7 @@ fi
 
 show_default(){
     clear
-        echo -e "\e[1;12m********************************************************************************\e[0;39m"
+        echo -e "\e[1;12m********************************************************************************\e[0;49m"
        	echo -e "\e[1;24m###########              isonova make new clean chroot               ###########\e[0;30m"
         echo -e "\e[1;12m********************************************************************************\e[0;32m"
 	
@@ -274,13 +274,14 @@ install_app(){
 
 modify_squashfs(){
 	
-	sudo unsquashfs ${ARCH_LIVE}/casper/filesystem.squashfs -d ${SQUASHFS_ROOT_DIRECTORY}
+		
+	sudo unsquashfs $PWD/$ARCH_LIVECD/casper/filesystem.squashfs -d $PWD/${SQUASHFS_ROOT_DIRECTORY} 2> /dev/null
 
-	sudo mv ${ARCH_LIVE}/casper/filesystem.squashfs $ARCH_LIVE/casper/filesystem.squashfs.save
+	sudo mv $PWD/$ARCH_LIVECD/casper/filesystem.squashfs $PWD/$ARCH_LIVECD/casper/filesystem.squashfs.save 2> /dev/null
 
 	mount_fs_chroot
 
-	sudo chroot ${SQUASHFS_ROOT_DIRECTORY}/ /bin/bash
+	sudo chroot $PWD/${SQUASHFS_ROOT_DIRECTORY}/ /bin/bash
 
 	umount_fs_chroot
 	
@@ -297,13 +298,13 @@ compress_squashfs(){
 	umount_fs_chroot
 
     #Create the folder casper if not exist
-    mkdir -p  $ARCH_LIVE/casper
+    mkdir -p  $PWD/$ARCH_LIVECD/casper
 	
 	sudo mksquashfs \
-	${SQUASHFS_ROOT_DIRECTORY} $ARCH_LIVE/casper/filesystem.squashfs     \
+	$PWD/${SQUASHFS_ROOT_DIRECTORY} $PWD/$ARCH_LIVECD/casper/filesystem.squashfs     \
 	-b 1048576 -comp xz -Xdict-size 100%
 
-	sudo rm $ARCH_LIVE/casper/filesystem.squashfs.save
+	sudo rm $PWD/$ARCH_LIVECD/casper/filesystem.squashfs.save 2> /dev/null
 
 }
 
@@ -312,63 +313,63 @@ new_squashfs_for_isoimage(){
 	echo  "Create filesystem manifest"
 
 	#Create the folder casper if not exist
-    mkdir -p  $ARCH_LIVE/casper
+    mkdir -p  $PWD/$ARCH_LIVECD/casper
     
 	sudo chroot ${SQUASHFS_ROOT_DIRECTORY} dpkg-query -W \
-	--showformat='${Package} ${Version}\n'  | tee  $ARCH_LIVE/casper/filesystem.manifest
+	--showformat='${Package} ${Version}\n'  | tee  $PWD/$ARCH_LIVECD/casper/filesystem.manifest
 
-	cp -v  $ARCH_LIVE/casper/filesystem.manifest  $ARCH_LIVE/casper/filesystem.manifest-desktop
+	cp -v  $PWD/$ARCH_LIVECD/casper/filesystem.manifest  $PWD/$ARCH_LIVECD/casper/filesystem.manifest-desktop
 
+	echo  "Remove installers from filesystem manifest"
+	
 	REMOVE='$NOINSTALLER  $RESCUE'
 
 	for i in $REMOVE; do
-	sed -i "/${i}/d" $ARCH_LIVE/casper/filesystem.manifest-desktop;
+	sed -i "/${i}/d" $PWD/$ARCH_LIVECD/casper/filesystem.manifest-desktop;
 	done
 
-	printf $(du -sx --block-size=1 $ARCH_LIVE/casper/filesystem.squashfs | \
-	cut -f1) > $ARCH_LIVE/casper/filesystem.size
+	printf $(du -sx --block-size=1 $PWD/$ARCH_LIVECD/casper/filesystem.squashfs | \
+	cut -f1) > $PWD/$ARCH_LIVECD/casper/filesystem.size
 
 	
 	echo "Copiando vmlinux e initrd"
 
-	if [ "$ARCH_LIVE" = "amd64" ];
+	if [ "$ARCH_LIVECD" = "amd64" ];
 	then
-	efi=".efi"
+		sudo cp ${SQUASHFS_ROOT_DIRECTORY}/boot/vmlinuz-*.*.**-**-generic.efi.signed $PWD/$ARCH_LIVECD/casper/vmlinuz"$efi"
 	else
-	efi=""
+		sudo cp ${SQUASHFS_ROOT_DIRECTORY}/boot/vmlinuz-*.*.**-**-generic $PWD/$ARCH_LIVECD/casper/vmlinuz"$efi"
 	fi 
 
-	sudo cp ${SQUASHFS_ROOT_DIRECTORY}/boot/vmlinuz-*.*.**-**-generic $ARCH_LIVE/casper/vmlinuz"$efi"
-
-	sudo cp ${SQUASHFS_ROOT_DIRECTORY}/boot/initrd.img-*.*.**-**-generic $ARCH_LIVE/casper/initrd.lz	
+	sudo cp ${SQUASHFS_ROOT_DIRECTORY}/boot/initrd.img-*.*.**-**-generic $PWD/$ARCH_LIVECD/casper/initrd.lz	
 
 		
 	echo -e "\e[1;12mDelete decompresed squashfs-root enviroment Y/n \e[0;39m"
      read  ans
-   if [ "$ans" = "Y" ] || [ "$ans" = "y" ] || [ "$ans" = "yes" ] || [ "$ans" = "" ]; then
+      if [ "$ans" = "Y" ] || [ "$ans" = "y" ] || [ "$ans" = "yes" ] || [ "$ans" = "" ]; then
     
-     sudo rm -R ${SQUASHFS_ROOT_DIRECTORY} 
-     echo  " ****Chroot environment deleted***** "
+         sudo rm -R ${SQUASHFS_ROOT_DIRECTORY} 
+         echo  " ****Chroot environment deleted***** "
   
-   fi
+      fi
 	
 }
 
 grub_efi(){
 	
-	mkdir -p $ARCH_LIVE
+	mkdir -p $PWD/$ARCH_LIVECD
 	
-	cp grub.tar.lzma $ARCH_LIVE
+	cp grub.tar.lzma $PWD/$ARCH_LIVECD
 
-	cd $ARCH_LIVE
+	cd $PWD/$ARCH_LIVECD
 	
 	tar --lzma -xvpf grub.tar.lzma 
 	
 	cd ..
 	
-	rm $ARCH_LIVE/grub.tar.lzma
+	rm $PWD/$ARCH_LIVECD/grub.tar.lzma
 	
-	cat <<EOF >  $ARCH_LIVE/boot/grub/grub.cfg
+	cat <<EOF >  $PWD/$ARCH_LIVECD/boot/grub/grub.cfg
 	
 if loadfont /boot/grub/font.pf2 ; then
 	set gfxmode=auto
@@ -381,7 +382,7 @@ fi
 set menu_color_normal=white/black
 set menu_color_highlight=black/light-gray
 
-menuentry "Nova Desktop $VERSION $ARCH_LIVE" {
+menuentry "Nova Desktop $VERSION $ARCH_LIVECD" {
 	set gfxpayload=keep
         linux	/casper/vmlinuz$efi  boot=casper quiet splash ---
         initrd /casper/initrd.lz
@@ -392,23 +393,23 @@ EOF
 
 iso_linux(){
 	
-	mkdir -p $ARCH_LIVE
+	mkdir -p $PWD/$ARCH_LIVECD
 	
-	cp isolinux.tar.lzma $ARCH_LIVE
+	cp isolinux.tar.lzma $PWD/$ARCH_LIVECD
 	
-	cd $ARCH_LIVE
+	cd $PWD/$ARCH_LIVECD
 	
 	tar --lzma -xvpf isolinux.tar.lzma 
 	
 	cd ..
 	
-	rm $ARCH_LIVE/isolinux.tar.lzma
+	rm $PWD/$ARCH_LIVECD/isolinux.tar.lzma
 	
-	cat <<EOF >  $ARCH_LIVE/isolinux/txt.cfg
+	cat <<EOF >  $PWD/$ARCH_LIVECD/isolinux/txt.cfg
 	
 default install
 label install
-  menu label ^Nova $VERSION $ARCH_LIVE
+  menu label ^Nova $VERSION $ARCH_LIVECD
   kernel /casper/vmlinuz$efi
   append  boot=casper locale=es_ES initrd=/casper/initrd.lz quiet splash --
 label hd
@@ -421,15 +422,16 @@ EOF
 
 setting_for_boot(){
 	
-	if [ "$ARCH_LIVE" = "amd64" ]; then
+	if [ "$ARCH_LIVECD" = "amd64" ]; then
 	 
 	grub_efi
 	
 	else 
-	mkdir $ARCH_LIVE/boot
 	
-	cat <<EOF >  $ARCH_LIVE/boot/loopback.cfg
-menuentry "Nova Desktop $VERSION $ARCH_LIVE" {
+	mkdir $PWD/$ARCH_LIVECD/boot
+	
+	cat <<EOF >  $PWD/$ARCH_LIVECD/boot/loopback.cfg
+menuentry "Nova Desktop $VERSION $ARCH_LIVECD" {
 	set gfxpayload=keep
         linux	/casper/vmlinuz$efi  boot=casper quiet splash ---
         initrd /casper/initrd.lz
@@ -441,18 +443,18 @@ EOF
 	
 	touch $DISTRO
 	
-	mkdir -p $ARCH_LIVE/.disk
+	mkdir -p $PWD/$ARCH_LIVECD/.disk
 	
-	cat <<EOF >  $ARCH_LIVE/.disk/base_components
+	cat <<EOF >  $PWD/$ARCH_LIVECD/.disk/base_components
 principal
 extendido
 EOF
-	touch  $ARCH_LIVE/.disk/base_installable
+	touch  $PWD/$ARCH_LIVECD/.disk/base_installable
 
-	cecho -e "full_cd/single" > $ARCH_LIVE/.disk/cd_type
+	cecho -e "full_cd/single" > $PWD/$ARCH_LIVECD/.disk/cd_type
 
-    cat <<EOF >  $ARCH_LIVE/README.diskdefines
-#define DISKNAME  Nova $VERSION LTS "$CODENAME" - Release $ARCH_LIVE
+    cat <<EOF >  $PWD/$ARCH_LIVECD/README.diskdefines
+#define DISKNAME  Nova $VERSION LTS "$CODENAME" - Release $ARCH_LIVECD
 #define TYPE  binary
 #define TYPEbinary  1
 #define ARCH  i386
@@ -468,13 +470,13 @@ EOF
 create_iso(){
 	
 	echo  "Create iso for $ARCH_LIVE"
-	sudo chmod 777 -R $ARCH_LIVE
+	sudo chmod 777 -R $PWD/$ARCH_LIVECD
 
-	echo  "Nova $VERSION $CODENAME - Release $ARCH_LIVE ($(date +%Y%m%d))" > $ARCH_LIVE/.disk/info
+	echo  "Nova $VERSION $CODENAME - Release $ARCH_LIVECD ($(date +%Y%m%d))" > $PWD/$ARCH_LIVECD/.disk/info
 
-	cd $ARCH_LIVE && find . -type f -print0 | xargs -0 md5sum | grep -v "\./md5sum.txt" > md5sum.txt
+	cd $PWD/$ARCH_LIVECD && find . -type f -print0 | xargs -0 md5sum | grep -v "\./md5sum.txt" > md5sum.txt
 
-	VOLNAME=$DISTRO-$VERSION-$ARCH_LIVE-$(date +%y%m%d)
+	VOLNAME=$DISTRO-$VERSION-$ARCH_LIVECD-$(date +%y%m%d)
 
 	ISOLINUXBIN=isolinux/isolinux.bin 
 
@@ -484,7 +486,7 @@ create_iso(){
 	
 	EFIBOOT=boot/grub/efi.img 
 	
-	if [ "$ARCH_LIVE" = "amd64" ]; then
+	if [ "$ARCH_LIVECD" = "amd64" ]; then
 	 
     xorriso -as  mkisofs -isohybrid-mbr $ISOHYBRIDMBR -b $ISOLINUXBIN  -c $ISOLINUXCAT -no-emul-boot -boot-load-size 4 -boot-info-table -eltorito-alt-boot -e $EFIBOOT -no-emul-boot -isohybrid-gpt-basdat -o "$PATH_TO_ISO_IMG" -r "." --sort-weight 0 / --sort-weight 1 /boot -joliet -joliet-long -volid $VOLNAME
 	
