@@ -18,7 +18,7 @@ export ARCH_LIVECD=$(uname -m)
 
 export SQUASHFS_ROOT_DIRECTORY=squashfs-root
 
-export PATH_TO_ISO_IMG=../nova-escritorio-$VERSION-$ARCH_LIVE.iso
+export PATH_TO_ISO_IMG=../nova-escritorio-$VERSION-$ARCH_LIVECD.iso
 
 #Installer for Nova
 NOVAINSTALLER="nova-escritorio ubiquity-frontend-gtk ubiquity-slideshow" 
@@ -127,6 +127,8 @@ umount_fs_chroot(){
 	
 clean_chroot(){
 	
+	echo "Make Chroot Clean"	
+	
 	if [ "$VERSION" = "2015" ]; then
 	 
 	nova_2015="rm /sbin/inictl 
@@ -166,7 +168,8 @@ clean_chroot
 
 		
 EOF
-		
+	
+	echo "Run finished Clean"	
 	sudo cp /tmp/util_clean_chroot.sh ${SQUASHFS_ROOT_DIRECTORY}/opt/
     sudo chroot ${SQUASHFS_ROOT_DIRECTORY} sh /opt/util_clean_chroot.sh
     echo "Finished Clean"
@@ -186,6 +189,13 @@ ln -s /bin/true /sbin/initctl
 ln -s /bin/true /usr/sbin/invoke-rc.d" 
 	
 	fi
+	
+	kernel="linux-generic"
+	if [ "$ARCH_LIVECD" = "amd64" ]; then
+	#   This is for UEFI Secure Boot 
+	kernel="linux-signed-generic"
+	fi
+	
 
 	cat <<EOF > /tmp/util_chroot_app.sh
 	#!/bin/bash
@@ -199,8 +209,7 @@ ln -s /bin/true /usr/sbin/invoke-rc.d"
 	
 	}
 
-      
-	custom_app(){
+    custom_app(){
 
 	echo "Fixing packages..."
 	apt-get install -f
@@ -230,10 +239,10 @@ ln -s /bin/true /usr/sbin/invoke-rc.d"
 	echo "Linux Image..."
 	apt-get install --yes casper
 	
-#   This is for UEFI Secure Boot 	
-#	apt-get install --yes linux-generic
-    apt-get install --yes linux-signed-generic
-	echo -e "\e[1;31m********************************************************************************\e[0;39m"
+	
+	apt-get install --yes $kernel
+
+    echo -e "\e[1;31m********************************************************************************\e[0;39m"
 	
 	echo "Fixing packages..."
 	apt-get install -f
@@ -244,7 +253,8 @@ ln -s /bin/true /usr/sbin/invoke-rc.d"
 	custom_app
 		
 EOF
-		
+	
+	echo "Run customize script"	
 	sudo cp /tmp/util_chroot_app.sh ${SQUASHFS_ROOT_DIRECTORY}/opt/
 	sudo chroot ${SQUASHFS_ROOT_DIRECTORY} bash /opt/util_chroot_app.sh
 	echo "Delete customize script"
@@ -253,7 +263,8 @@ EOF
 	}
 	
 install_app(){
-
+    echo "Installation app process"
+    
 	echo  "Set Network Configuration"
 	sudo cp /etc/hosts ${SQUASHFS_ROOT_DIRECTORY}/etc/hosts
 	
@@ -280,22 +291,25 @@ install_app(){
 
 modify_squashfs(){
 	
+	echo  "Modify Squashfs"
 		
-	sudo unsquashfs $PWD/$ARCH_LIVECD/casper/filesystem.squashfs -d $PWD/${SQUASHFS_ROOT_DIRECTORY} 2> /dev/null
+	sudo unsquashfs $PWD/$ARCH_LIVECD/casper/filesystem.squashfs -d ${SQUASHFS_ROOT_DIRECTORY} 2> /dev/null
 
 	sudo mv $PWD/$ARCH_LIVECD/casper/filesystem.squashfs $PWD/$ARCH_LIVECD/casper/filesystem.squashfs.save 2> /dev/null
 
 	mount_fs_chroot
 
-	sudo chroot $PWD/${SQUASHFS_ROOT_DIRECTORY}/ /bin/bash
+	sudo chroot ${SQUASHFS_ROOT_DIRECTORY}/ /bin/bash
 
 	umount_fs_chroot
+	
+	echo  "Finish Modify Squashfs"
 	
 	}
 
 compress_squashfs(){
 	
-	echo  "Close chroot"
+	echo  "Compress Squashfs"
 
 	mount_fs_chroot
 	
@@ -307,11 +321,13 @@ compress_squashfs(){
     mkdir -p  $PWD/$ARCH_LIVECD/casper
 	
 	sudo mksquashfs \
-	$PWD/${SQUASHFS_ROOT_DIRECTORY} $PWD/$ARCH_LIVECD/casper/filesystem.squashfs     \
+	${SQUASHFS_ROOT_DIRECTORY} $PWD/$ARCH_LIVECD/casper/filesystem.squashfs     \
 	-b 1048576 -comp xz -Xdict-size 100%
 
 	sudo rm $PWD/$ARCH_LIVECD/casper/filesystem.squashfs.save 2> /dev/null
 
+	echo  "Finish Compress Squashfs"
+    
 }
 
 new_squashfs_for_isoimage(){
@@ -322,9 +338,9 @@ new_squashfs_for_isoimage(){
     mkdir -p  $PWD/$ARCH_LIVECD/casper
     
 	sudo chroot ${SQUASHFS_ROOT_DIRECTORY} dpkg-query -W \
-	--showformat='${Package} ${Version}\n'  | tee  $PWD/$ARCH_LIVECD/casper/filesystem.manifest
+	--showformat='${Package} ${Version}\n'  >  $PWD/$ARCH_LIVECD/casper/filesystem.manifest
 
-	cp -v  $PWD/$ARCH_LIVECD/casper/filesystem.manifest  $PWD/$ARCH_LIVECD/casper/filesystem.manifest-desktop
+	cp -v  $PWD/$ARCH_LIVECD/casper/filesystem.manifest  $PWD/$ARCH_LIVECD/casper/filesystem.manifest-desktop 
 
 	echo  "Remove installers from filesystem manifest"
 	
@@ -363,9 +379,12 @@ new_squashfs_for_isoimage(){
   
       fi
 	
+	echo  "Finish filesystem manifest and vmlinux"
 }
 
 grub_efi(){
+	
+	echo  "Installing Grub Uefi"
 	
 	mkdir -p $PWD/$ARCH_LIVECD
 	
@@ -399,10 +418,14 @@ menuentry "Nova Desktop $VERSION $ARCH_LIVECD" {
 }
 
 EOF
+
+	echo  "Finish installing Grub Uefi"
 }
 
 iso_linux(){
 	
+	echo  "Installing Isolinux Legacy"
+		
 	mkdir -p $PWD/$ARCH_LIVECD
 	
 	cp "${PROYECT_BASE}"/isolinux.tar.lzma $PWD/$ARCH_LIVECD
@@ -428,9 +451,12 @@ label hd
   
 EOF
 
+	echo  "Finish installing Isolinux Legacy"
 }
 
 setting_for_boot(){
+	
+	echo  "Create $ARCH_LIVECD Boot structure"
 	
 	if [ "$ARCH_LIVECD" = "amd64" ]; then
 	 
@@ -451,14 +477,18 @@ EOF
 	
 	iso_linux
 	
+	echo  "Create $ARCH_LIVECD Boot Distro"
+	
 	touch $PWD/$ARCH_LIVECD/$DISTRO
 	
+    echo  "Create $ARCH_LIVECD Boot Specifications"
 	mkdir -p $PWD/$ARCH_LIVECD/.disk
 	
 	cat <<EOF >  $PWD/$ARCH_LIVECD/.disk/base_components
 principal
 extendido
 EOF
+
 	touch  $PWD/$ARCH_LIVECD/.disk/base_installable
 
 	echo -e "full_cd/single" > $PWD/$ARCH_LIVECD/.disk/cd_type
@@ -475,6 +505,7 @@ EOF
 #define TOTALNUM0  1
 EOF
 
+ 	echo  "Finish $ARCH_LIVECD Boot structure"
 }
 
 create_iso(){
