@@ -506,11 +506,11 @@ create_iso(){
 	
 	if [ "$ARCH_LIVECD" = "amd64" ]; then
 	 
-    xorriso -as  mkisofs -isohybrid-mbr $ISOHYBRIDMBR -b $ISOLINUXBIN  -c $ISOLINUXCAT -no-emul-boot -boot-load-size 4 -boot-info-table -eltorito-alt-boot -e $EFIBOOT -no-emul-boot -isohybrid-gpt-basdat -o "$PATH_TO_ISO_IMG" -r "." --sort-weight 0 / --sort-weight 1 /boot -joliet -joliet-long -volid $VOLNAME
+    xorriso -as  mkisofs -isohybrid-mbr $ISOHYBRIDMBR -b $ISOLINUXBIN  -c $ISOLINUXCAT -no-emul-boot -boot-load-size 4 -boot-info-table -eltorito-alt-boot -e $EFIBOOT -no-emul-boot -isohybrid-gpt-basdat -o "$PATH_TO_ISO_IMG" -r "." --sort-weight 0 / --sort-weight 1 /boot -joliet -joliet-long -volid $VOLNAME 
 	
 	else
 	
-	xorriso -as  mkisofs  -r --sort-weight 0 / --sort-weight 1 /boot -J -l -volid $VOLNAME -b $ISOLINUXBIN -c $ISOLINUXCAT -no-emul-boot -boot-load-size 4 -boot-info-table -o "$PATH_TO_ISO_IMG" .
+	xorriso -as  mkisofs  -r --sort-weight 0 / --sort-weight 1 /boot -J -l -volid $VOLNAME -b $ISOLINUXBIN -c $ISOLINUXCAT -no-emul-boot -boot-load-size 4 -boot-info-table -o "$PATH_TO_ISO_IMG" .  
 
     fi
     
