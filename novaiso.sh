@@ -223,7 +223,10 @@ ln -s /bin/true /usr/sbin/invoke-rc.d"
 	echo -e "\e[1;31m********************************************************************************\e[0;39m"
 	echo "Linux Image..."
 	apt-get install --yes casper
-	apt-get install --yes linux-generic
+	
+#   This is for UEFI Secure Boot 	
+#	apt-get install --yes linux-generic
+    apt-get install --yes linux-signed-generic
 	echo -e "\e[1;31m********************************************************************************\e[0;39m"
 	
 	echo "Fixing packages..."
@@ -237,7 +240,7 @@ ln -s /bin/true /usr/sbin/invoke-rc.d"
 EOF
 		
 	sudo cp /tmp/util_chroot_app.sh ${SQUASHFS_ROOT_DIRECTORY}/opt/
-	sudo chroot ${SQUASHFS_ROOT_DIRECTORY} sh /opt/util_chroot_app.sh
+	sudo chroot ${SQUASHFS_ROOT_DIRECTORY} bash /opt/util_chroot_app.sh
 	echo "Delete customize script"
 	sudo rm ${SQUASHFS_ROOT_DIRECTORY}/opt/util_chroot_app.sh
 	
